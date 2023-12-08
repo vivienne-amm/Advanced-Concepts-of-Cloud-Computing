@@ -11,6 +11,8 @@ SUBNET_ID = 'subnet-030172ef91484d431'
 security_group_orchestrator_name = "security_group_orchestrator"
 security_group_workers_name = "security_group_workers"
 security_group_standalone_name = "security_group_standalone"
+security_group_proxy_name = "security_group_proxy"
+
 regionName = 'us-east-1'
 #imageId = 'ami-0fe0238291c8e3f07'
 imageId = 'ami-0ee23bfc74a881de5'
@@ -246,6 +248,28 @@ def createSecurityGroupStandalone(client, vpcId):
     return group_id
 
 
+def createSecurityGroupProxy(client, vpcId):
+
+    # create new security group for workers
+    response = client.create_security_group(
+        GroupName=security_group_standalone_name,
+        Description='Security group',
+        VpcId=vpcId
+    )
+    group_id = response['GroupId']
+
+    client.authorize_security_group_ingress(
+        CidrIp="0.0.0.0/0",
+        IpProtocol='-1',
+        FromPort=0,
+        ToPort=65535,
+        GroupName=security_group_standalone_name,
+    )
+
+    # ID of created security group
+    return group_id
+
+
 def get_security_group_by_name(client, group_name):
     response = client.describe_security_groups(Filters=[{'Name': 'group-name', 'Values': [group_name]}])
     group_id = ""
@@ -262,6 +286,9 @@ def get_manager_security_group(client):
 
 def get_worker_security_group(client):
     return get_security_group_by_name(client, security_group_workers_name)
+
+def get_proxy_security_group(client):
+    return get_security_group_by_name(client, security_group_proxy_name)
 
 def get_standalone_security_group(client):
     return get_security_group_by_name(client, security_group_standalone_name)
@@ -340,6 +367,7 @@ def initArchitecture():
     # Retrieve or create orchestrator and worker security groups
     securityGroupManagerId = get_manager_security_group(ec2Client)
     securityGroupWorkerId = get_worker_security_group(ec2Client)
+    securityGroupProxyId = get_proxy_security_group(ec2Client)
     securityGroupStandaloneId = get_standalone_security_group(ec2Client)
     if securityGroupManagerId == "":
         securityGroupManagerId = createSecurityGroupManager(ec2Client, vpcId)
@@ -371,9 +399,9 @@ def initArchitecture():
     standAloneDns = createInstance(ec2Resource, 't2.micro', securityGroupStandaloneId, "172.31.1.5", "standalone", script)
 
     script = loadScript(
-        'manager_setup.sh',
+        'proxy.sh',
     )
-    orchestratorDns = createInstance(ec2Resource, 't2.micro', securityGroupManagerId, "172.31.1.1", "manager", script)
+    proxyDns = createInstance(ec2Resource, 't2.large', securityGroupProxyId, "172.31.1.10", "proxy", script)
 
     print('Instances initiated!')
 
