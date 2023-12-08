@@ -1,9 +1,25 @@
+from errno import errorcode
+
 import pymysql
 import sys
 import random
+import socket
 
 from pythonping import ping
-from sshtunnel import SSHTunnelForwarder
+
+def initialize_socket():
+    s = socket.socket()
+    print("Socket successfully created")
+
+    # proxy port
+    port = 5001
+    s.bind(('', port))
+    print("socket binded to %s" % (port))
+
+    s.listen(1)
+    print("socket is listening")
+
+    return s
 
 ips = {
     'master': '137.31.1.1',
@@ -14,24 +30,6 @@ ips = {
 
 workers = ['worker1', 'worker2', 'worker3']
 master = 'master'
-
-# Params to setup the SSH tunnel forwarder
-ssh_config = {
-    'ssh_username': 'ubuntu',
-    'ssh_pkey': 'vockey.pem',
-    'remote_bind_address': (ips["master"], 3306),
-}
-
-# Params to connect to the MySQL cluster
-db_config = {
-    'host': ips["master"],
-    'user': 'proxy_user',
-    'password': 'super_secret_proxy_password',
-    'db': 'mycluster',
-    'port': 3306,
-    'autocommit': True
-}
-
 
 def getFastestPingWorker():
     """
@@ -64,7 +62,7 @@ def needsWriteAccess(query):
     return False
 
 
-def executeCommands(name, commands):
+def executeCommands(server_name, commands):
     """
     Runs the sql commands on the specified node.
     Prints the output of the command
@@ -72,27 +70,26 @@ def executeCommands(name, commands):
     :param: name of the node
     :param: query to check
     """
-    with SSHTunnelForwarder(ips[name], **ssh_config) as tunnel:
-        connection = pymysql.connect(**db_config)
+    try:
+        cnx = pymysql.connector.connect(user='proxy', password='1234',
+                                      host=ips[server_name],
+                                      database='mycluster')
+    except pymysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
 
-        try:
-            with connection.cursor() as cursor:
-                # Execute a MySQL query
-                sql = 'SELECT * FROM actor LIMIT 10;'
-                cursor.execute(commands)
-
-                # Fetch the results of the query
-                result = cursor.fetchall()
-
-                # Print the results
-                print(tuple([i[0] for i in cursor.description]))
-                for line in result:
-                    print(line)
-
-        finally:
-            # Close the connection to the MySQL cluster
-            connection.close()
-
+    cursor = cnx.cursor()
+    cursor.execute(commands)
+    cmd_type = commands.split()[0].lower()
+    if cmd_type == "insert" or cmd_type == "delete":
+        cnx.commit()
+    elif cmd_type == "select":
+        print("query result: ")
+        print(cursor.fetchall())
 
 def direct(query):
     """
