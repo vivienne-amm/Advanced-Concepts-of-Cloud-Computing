@@ -8,15 +8,17 @@ from benchmarkservice import runWorkload, getOrchestratorUrl
 if argv[1] == 'UP':
     startTime = time.time()
     print('[MAIN] Initializing architecture!')
-    instanceId = initArchitecture()
+    orchestratorDns, standAloneDns = initArchitecture()
+    orchestratorUrl = getOrchestratorUrl(orchestratorDns)
+    standaloneUrl = getOrchestratorUrl(standAloneDns)
 
-
-    #orchestratorUrl = getOrchestratorUrl(orchestratorDns)
     #checkUntilReady(workerDnsArray)
-    #print("All workers ready")
-    #print(f'Orchestrator url: {orchestratorUrl}')
+    print('[MAIN] Architecture initialized, going to sleep for 60 seconds!')
+    time.sleep(60)
+    print("All workers ready")
+    print(f'Standalone url: {standaloneUrl}')
+    print(f'Orchestrator url: {orchestratorUrl}')
     printElapsedTime(startTime)
-
 # Tear down architecture
 elif argv[1] == 'DOWN':
     print('[MAIN] Tearing down architecture!')
