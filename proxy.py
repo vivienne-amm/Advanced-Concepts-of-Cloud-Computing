@@ -21,10 +21,10 @@ def initialize_socket():
     return s
 
 ips = {
-    'master': '137.31.1.1',
-    'worker1': '137.31.1.2',
-    'worker2': '137.31.1.3',
-    'worker3': '137.31.1.4'
+    'master': '172.31.1.1',
+    'worker1': '172.31.1.2',
+    'worker2': '172.31.1.3',
+    'worker3': '172.31.1.4'
 }
 
 # Params to connect to the MySQL cluster
@@ -162,6 +162,7 @@ def sendQuery(type, query):
 
 if __name__ == "__main__":
     # if the first argument isn't specified, ask user to chose a proxy type
+    """
     type = ""
     if len(sys.argv) == 1:
         print("choose a proxy type:")
