@@ -4,7 +4,6 @@ import pymysql
 import sys
 import random
 import socket
-
 from pythonping import ping
 
 def initialize_socket():
@@ -26,6 +25,16 @@ ips = {
     'worker1': '137.31.1.2',
     'worker2': '137.31.1.3',
     'worker3': '137.31.1.4'
+}
+
+# Params to connect to the MySQL cluster
+db_config = {
+    'host': ips["master"],
+    'user': 'proxy_user',
+    'password': 'super_secret_proxy_password',
+    'db': 'mycluster',
+    'port': 5001,
+    'autocommit': True
 }
 
 workers = ['worker1', 'worker2', 'worker3']
@@ -62,7 +71,7 @@ def needsWriteAccess(query):
     return False
 
 
-def executeCommands(server_name, commands):
+def executeCommands(name, commands):
     """
     Runs the sql commands on the specified node.
     Prints the output of the command
@@ -70,26 +79,25 @@ def executeCommands(server_name, commands):
     :param: name of the node
     :param: query to check
     """
-    try:
-        cnx = pymysql.connector.connect(user='proxy', password='1234',
-                                      host=ips[server_name],
-                                      database='mycluster')
-    except pymysql.connector.Error as err:
-        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Something is wrong with your user name or password")
-        elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print("Database does not exist")
-        else:
-            print(err)
+    connection = pymysql.connect(**db_config)
 
-    cursor = cnx.cursor()
-    cursor.execute(commands)
-    cmd_type = commands.split()[0].lower()
-    if cmd_type == "insert" or cmd_type == "delete":
-        cnx.commit()
-    elif cmd_type == "select":
-        print("query result: ")
-        print(cursor.fetchall())
+    try:
+        with connection.cursor() as cursor:
+            # Execute a MySQL query
+            sql = 'SELECT * FROM actor LIMIT 10;'
+            cursor.execute(commands)
+
+            # Fetch the results of the query
+            result = cursor.fetchall()
+
+            # Print the results
+            print(tuple([i[0] for i in cursor.description]))
+            for line in result:
+                print(line)
+
+    finally:
+        # Close the connection to the MySQL cluster
+        connection.close()
 
 def direct(query):
     """
