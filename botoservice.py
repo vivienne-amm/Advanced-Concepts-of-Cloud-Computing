@@ -248,27 +248,6 @@ def createSecurityGroupStandalone(client, vpcId):
     return group_id
 
 
-def createSecurityGroupProxy(client, vpcId):
-
-    # create new security group for workers
-    response = client.create_security_group(
-        GroupName=security_group_standalone_name,
-        Description='Security group',
-        VpcId=vpcId
-    )
-    group_id = response['GroupId']
-
-    client.authorize_security_group_ingress(
-        CidrIp="0.0.0.0/0",
-        IpProtocol='-1',
-        FromPort=0,
-        ToPort=65535,
-        GroupName=security_group_standalone_name,
-    )
-
-    # ID of created security group
-    return group_id
-
 
 def get_security_group_by_name(client, group_name):
     response = client.describe_security_groups(Filters=[{'Name': 'group-name', 'Values': [group_name]}])
@@ -294,6 +273,40 @@ def get_standalone_security_group(client):
     return get_security_group_by_name(client, security_group_standalone_name)
 
 
+def createSecurityGroupProxy(client, vpcId):
+    response = client.create_security_group(
+        GroupName=security_group_proxy_name,
+        Description='Allow http requests from any ip',
+        VpcId=vpcId
+    )
+    group_id = response['GroupId']
+
+    # ingress + egress rules
+    allow_all_traffic_rule = {
+        'IpProtocol': '-1',
+        'FromPort': 0,
+        'ToPort': 65535,
+        'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+    }
+
+    ssh_rule = {
+        'IpProtocol': 'tcp',
+        'FromPort': 22,
+        'ToPort': 22,
+        'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+    }
+
+
+    # Authorize ingress + egress rules for security group
+    client.authorize_security_group_ingress(
+        GroupId=group_id,
+        IpPermissions=[allow_all_traffic_rule, ssh_rule]
+    )
+
+    # return the ID of created security group
+    return group_id
+
+
 def createSecurityGroupManager(client, vpcId):
     response = client.create_security_group(
         GroupName=security_group_orchestrator_name,
@@ -307,14 +320,17 @@ def createSecurityGroupManager(client, vpcId):
         'IpProtocol': '-1',
         'FromPort': 0,
         'ToPort': 65535,
-        'IpRanges': [{'CidrIp': '172.31.0.0/20'}]
+        'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+        #172.31.0.0/20
     }
+
     ssh_rule = {
         'IpProtocol': 'tcp',
         'FromPort': 22,
         'ToPort': 22,
         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
     }
+
 
     # Authorize ingress + egress rules for security group
     client.authorize_security_group_ingress(
@@ -378,6 +394,8 @@ def initArchitecture():
     if securityGroupWorkerId == "":
         securityGroupWorkerId = createSecurityGroupWorker(ec2Client, vpcId)
 
+    if securityGroupProxyId == "":
+        securityGroupProxyId = createSecurityGroupProxy(ec2Client, vpcId)
     print('Security group created!')
 
     script = loadScript(

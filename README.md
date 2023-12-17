@@ -13,4 +13,28 @@ To run the code following steps need to be executed:
 - Create an .env file with your AWS credentials. An example with the valid format can seen in the .env.example file.
 - Use main.py to initialize python3 main.py UP, tear down python3 main.py DOWN, or run a workload on the architecture python3 main.py RUN.
 
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-192-97-48.compute-1.amazonaws.com
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-231-156-110.compute-1.amazonaws.com
+
+scp -r -i /Users/vivi/Downloads/vockey.pem proxy.py ubuntu@ec2-44-193-10-101.compute-1.amazonaws.com:/home/ubuntu
+
+scp -r -i /Users/vivi/Downloads/vockey.pem sql_examples/create_test.sql ubuntu@ec2-3-231-156-110.compute-1.amazonaws.com:/home/ubuntu
+
+Send To Proxy:
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-231-156-110.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-231-156-110.compute-1.amazonaws.com:/home/ubuntu
+
+
+
+
+
+On master node:
+mysql -u root -p
+
+(passwort ist root)
+DROP SCHEMA IF EXISTS mycluster;
+CREATE SCHEMA mycluster;
+CREATE USER 'proxy_user'@'%' IDENTIFIED BY 'super_secret_proxy_password';
+GRANT ALL PRIVILEGES ON mycluster.* TO 'proxy_user'@'%';
+FLUSH PRIVILEGES;
+
+copy things of create_test sql and let it run on mysql on maste node
