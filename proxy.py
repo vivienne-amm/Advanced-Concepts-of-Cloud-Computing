@@ -90,8 +90,6 @@ def executeCommands(name, commands):
                 print(tuple([i[0] for i in cursor.description]))
                 for line in result:
                     print(line)
-        except Exception as e:
-            print(f"Error: {e}")
         finally:
             # Close the connection to the MySQL cluster
             connection.close()
