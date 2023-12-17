@@ -17,7 +17,7 @@ sudo apt-get update -y
 sudo apt-get install python3-venv nginx dos2unix -y
 
 # fetching config files from git
-# cd /home/ubuntu
+cd /home/ubuntu
 
 chmod 400 vockey.pem
 
@@ -25,11 +25,8 @@ chmod 400 vockey.pem
 #cp /home/ubuntu/8415_Project/proxy.service /etc/systemd/system
 
 # setup python virtual environment
-dos2unix /home/ubuntu/8415_Project/requirements.txt
-cd /home/ubuntu/8415_Project
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-python3 proxy.py "direct" sql_examples/create_test.sql
