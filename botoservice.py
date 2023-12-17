@@ -205,10 +205,11 @@ def createSecurityGroupWorker(client, vpcId):
     # ingress + egress rules
     allow_all_traffic_rule = {
          'IpProtocol': '-1',
-         'FromPort': 0,
-         'ToPort': 65535,
-         'IpRanges': [{'CidrIp': '172.31.0.0/20'}]
+         'FromPort': -1,
+         'ToPort': -1,
+         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
     }
+    #          'IpRanges': [{'CidrIp': '172.31.0.0/20'}]
     ssh_rule = {
         'IpProtocol': 'tcp',
         'FromPort': 22,
@@ -239,8 +240,8 @@ def createSecurityGroupStandalone(client, vpcId):
     client.authorize_security_group_ingress(
         CidrIp="0.0.0.0/0",
         IpProtocol='-1',
-        FromPort=0,
-        ToPort=65535,
+        FromPort=-1,
+        ToPort=-1,
         GroupName=security_group_standalone_name,
     )
 
@@ -284,8 +285,8 @@ def createSecurityGroupProxy(client, vpcId):
     # ingress + egress rules
     allow_all_traffic_rule = {
         'IpProtocol': '-1',
-        'FromPort': 0,
-        'ToPort': 65535,
+        'FromPort': -1,
+        'ToPort': -1,
         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
     }
 
@@ -318,8 +319,8 @@ def createSecurityGroupManager(client, vpcId):
     # ingress + egress rules
     allow_all_traffic_rule = {
         'IpProtocol': '-1',
-        'FromPort': 0,
-        'ToPort': 65535,
+        'FromPort': -1,
+        'ToPort': -1,
         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
         #172.31.0.0/20
     }

@@ -45,6 +45,7 @@ def getLowestPingWorker():
         if ping_result.packet_loss != 1 and time > ping_result.rtt_avg_ms:
             best = worker
             time = ping_result.rtt_avg_ms
+    print("Best one was  " + best)
 
     return best
 
@@ -73,9 +74,7 @@ def executeCommands(name, commands):
     :param: query to check
     """
     with SSHTunnelForwarder(ips[name], **ssh_config) as tunnel:
-        print(tunnel)
-        print(tunnel.tunnel_is_up)
-
+        print("executing on " + ips[name])
         connection = pymysql.connect(**db_config)
 
         try:
@@ -104,6 +103,7 @@ def direct(query):
 
     :param: query to run
     """
+    print("directly")
     executeCommands("master", query)
 
 
@@ -113,11 +113,15 @@ def randomized(query):
 
     :param: query to run
     """
+    print("ranomized")
+    print("needsWriteAccess(query): " + str(needsWriteAccess(query)))
+
     if not needsWriteAccess(query):
         random_worker = random.choice(workers)
         print("read on " + random_worker)
         executeCommands(random_worker, query)
     else:
+        print("Need Write access therefore exxecuted directly")
         direct(query)
 
 
@@ -127,6 +131,8 @@ def customized(query):
 
     :param: query to run
     """
+    print("customized")
+
     if not needsWriteAccess(query):
         fastestWorker = getLowestPingWorker()
         if fastestWorker != "":
