@@ -64,7 +64,6 @@ def direct(query):
 def randomized(query):
     """
     Runs the sql commands on random strategy
-
     :param: query to run
     """
     print("ranomized")
@@ -75,7 +74,7 @@ def randomized(query):
         print("read on " + random_worker)
         executeCommands(random_worker, query)
     else:
-        print("Need Write access therefore exxecuted directly")
+        print("Needs Write access therefore executed directly")
         direct(query)
 
 def customized(query):
@@ -119,7 +118,7 @@ def executeCommands(name, commands):
     :param: query to check
     """
     with SSHTunnelForwarder(ips[name], **ssh_config) as tunnel:
-        print("executing on " + ips[name])
+        print("executing on " + name + "with IP: " + ips[name])
         connection = pymysql.connect(**db_config)
 
         try:
@@ -204,8 +203,9 @@ def main():
             print(f"Proxy Type: {proxy_type}")
             print(f"SQL Command: {sql_command}")
             sendQuery(proxy_type, sql_command)
-            response = "Processed successfully!"
-            s.send(str.encode(response))
+            #response = "Processed successfully!"
+            #s.send(str.encode(response))
+            s.close()
         else:
             print("Invalid response!")
 

@@ -48,7 +48,6 @@ if __name__ == '__main__':
 
     # ask for user to enter query/queries in the terminal
     if len(sys.argv) < 3:
-        print('type < 3!')
         sql_command = ""
         while True:
             line = input("> ")
