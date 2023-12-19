@@ -19,7 +19,11 @@ sudo apt-get install python3-venv nginx dos2unix -y
 # fetching config files from git
 cd /home/ubuntu
 
+# here add the whole project directory with scp
+
 chmod 400 vockey.pem
+
+
 
 # adding service file
 #cp /home/ubuntu/8415_Project/proxy.service /etc/systemd/system

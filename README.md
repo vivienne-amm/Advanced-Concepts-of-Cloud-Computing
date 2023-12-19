@@ -13,15 +13,40 @@ To run the code following steps need to be executed:
 - Create an .env file with your AWS credentials. An example with the valid format can seen in the .env.example file.
 - Use main.py to initialize python3 main.py UP, tear down python3 main.py DOWN, or run a workload on the architecture python3 main.py RUN.
 
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-211-49-109.compute-1.amazonaws.com
+#gatekeeper
+ec2-3-237-84-87
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-237-84-87.compute-1.amazonaws.com
 
-scp -r -i /Users/vivi/Downloads/vockey.pem proxy.py ubuntu@ec2-44-193-10-101.compute-1.amazonaws.com:/home/ubuntu
 
-scp -r -i /Users/vivi/Downloads/vockey.pem sql_examples/create_test.sql ubuntu@ec2-3-231-156-110.compute-1.amazonaws.com:/home/ubuntu
+#proxy
+ec2-3-238-141-231
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-238-141-231.compute-1.amazonaws.com
 
-Send To Proxy:
-scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-211-49-109.compute-1.amazonaws.com:/home/ubuntu
-scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-211-49-109.compute-1.amazonaws.com:/home/ubuntu
+#manager
+ec2-44-199-233-230
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-199-233-230.compute-1.amazonaws.com
+
+#workers
+ec2-18-234-139-173
+ec2-3-235-3-140
+ec2-44-200-133-26.
+
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-200-133-26.compute-1.amazonaws.com
+
+scp -r -i /Users/vivi/Downloads/vockey.pem gatekeeper.py ubuntu@ec2-3-237-61-24.compute-1.amazonaws.com:/home/ubuntu
+
+scp -r -i /Users/vivi/Downloads/vockey.pem sql_examples/create_test.sql ubuntu@ec2-44-197-194-245.compute-1.amazonaws.com:/home/ubuntu
+
+Send To Proxy:ec2-44-204-211-99
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-204-211-99.compute-1.amazonaws.com:/home/ubuntu
+
+#proxy
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-238-141-231.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-238-141-231.compute-1.amazonaws.com:/home/ubuntu
+
+#gatekeeper
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-237-84-87.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-237-84-87.compute-1.amazonaws.com:/home/ubuntu
 
 
 
@@ -31,8 +56,10 @@ mysql -u root -p
 (passwort ist root)
 DROP SCHEMA IF EXISTS mycluster;
 CREATE SCHEMA mycluster;
+USE mycluster;
+
 CREATE USER 'proxy_user'@'%' IDENTIFIED BY 'super_secret_proxy_password';
-GRANT ALL PRIVILEGES ON mycluster.* TO 'proxy_user'@'%';
+GRANT ALL PRIVILEGES ON mycluster.* TO 'proxy_user'@'%'; # oder mycluster statt mycluster
 FLUSH PRIVILEGES;
 
 copy things of create_test sql and let it run on mysql on maste node
@@ -42,3 +69,11 @@ Dann auf proxy starten z.B. mit
 sudo /home/ubuntu/venv/bin/python3 proxy.py "custom"
 und dann z.B.:
 SELECT * FROM actor LIMIT 5;
+
+
+
+sudo /home/ubuntu/venv/bin/python3 proxy.py
+
+On gatekeeper:
+sudo /home/ubuntu/venv/bin/python3 gatekeeper.py
+sudo /home/ubuntu/venv/bin/python3 client.py

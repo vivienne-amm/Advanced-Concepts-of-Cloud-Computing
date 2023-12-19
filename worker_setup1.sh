@@ -18,7 +18,7 @@ ndb-connectstring=ip-172-31-1-1.ec2.internal
 " | sudo tee /etc/my.cnf
 
 # Creating data directory
-mkdir -p /usr/local/mysql/data
+sudo mkdir -p /usr/local/mysql/data
 
 # Add the instructions for systemd to start, stop and restart ndb_mgmd
 echo "

@@ -86,28 +86,6 @@ def setupContainersConfig(containerConfigTemplate, workerIps):
     return containerConfigTemplate
 
 
-def loadOrchestratorScript(scriptPath, appCodePath, containerConfigPath, requirementsPath, dockerfilePath, workerIps):
-    # read content form files
-    user_data_script_template = open(scriptPath, 'r').read()
-    orchestrator_flask_source_code = open(appCodePath, 'r').read()
-    container_config_template = open(containerConfigPath, 'r').read()
-    orchestrator_dockerfile_source_code = open(dockerfilePath, 'r').read()
-    orchestrator_requirements = open(requirementsPath, 'r').read()
-
-    # replace placeholders with actual content
-    container_config = setupContainersConfig(container_config_template, workerIps)
-    user_data_script_template = user_data_script_template.replace("__CONTAINER_CONFIG__", container_config)
-    user_data_script_template = user_data_script_template.replace("__APP_CODE__", orchestrator_flask_source_code)
-    user_data_script_template = user_data_script_template.replace("__REQUIREMENTS__", orchestrator_requirements)
-
-    return user_data_script_template.replace("__DOCKERFILE__", orchestrator_dockerfile_source_code)
-
-
-def loadScript(scriptPath):
-    script_template = open(scriptPath, 'r').read()
-    return script_template
-
-
 # Fetches an instance by given ID and retrieves its DNS.
 def getInstanceDns(ec2client, instanceId):
     response = ec2client.describe_instances(InstanceIds=[instanceId])
@@ -118,15 +96,12 @@ def getInstanceDns(ec2client, instanceId):
 # Returns instance Id of the orchestrator.
 def createManager(ec2resource, instanceType, securityGroupId, workerIps, privateIp):
     try:
-        script = loadScript(
-            'manager_setup.sh',
-        ) # create orchestrator instance
+
         response = ec2resource.create_instances(
             ImageId=imageId,  # taken from https://cloud-images.ubuntu.com/locator/ec2/, map to multiple
             MinCount=1,
             MaxCount=1,
             InstanceType=instanceType,
-            UserData=script,
             SecurityGroupIds=[securityGroupId],
             SubnetId=SUBNET_ID,
             PrivateIpAddress=privateIp,
@@ -148,7 +123,7 @@ def createManager(ec2resource, instanceType, securityGroupId, workerIps, private
 
 # Creates an orchestrator instance of specified type and assigns it to security group with provided id.
 # Returns instance Id of the orchestrator.
-def createInstance(ec2resource, instanceType, securityGroupId, privateIp, tagName, script):
+def createInstance(ec2resource, instanceType, securityGroupId, privateIp, tagName):
     try:
 
         response = ec2resource.create_instances(
@@ -156,7 +131,6 @@ def createInstance(ec2resource, instanceType, securityGroupId, privateIp, tagNam
             MinCount=1,
             MaxCount=1,
             InstanceType=instanceType,
-            UserData=script,
             SecurityGroupIds=[securityGroupId],
             SubnetId=SUBNET_ID,
             KeyName='vockey',
@@ -304,6 +278,7 @@ def createSecurityGroupProxy(client, vpcId):
         IpPermissions=[allow_all_traffic_rule, ssh_rule]
     )
 
+
     # return the ID of created security group
     return group_id
 
@@ -399,28 +374,20 @@ def initArchitecture():
         securityGroupProxyId = createSecurityGroupProxy(ec2Client, vpcId)
     print('Security group created!')
 
-    script = loadScript(
-        'worker_setup1.sh',
-    )
+
     # create the worker and orchestrator instances
-    worker1 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.2", "worker", script)
-    worker2 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.3", "worker", script)
-    worker3 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.4", "worker", script)
+    worker1 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.2", "worker")
+    worker2 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.3", "worker")
+    worker3 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.4", "worker")
 
-    script = loadScript(
-        'manager_setup.sh',
-    )
-    orchestratorDns = createInstance(ec2Resource, 't2.micro', securityGroupManagerId, "172.31.1.1", "manager", script)
+    orchestratorDns = createInstance(ec2Resource, 't2.micro', securityGroupManagerId, "172.31.1.1", "manager")
 
-    script = loadScript(
-        'standalone_setup.sh',
-    )  # create orchestrator instance
-    standAloneDns = createInstance(ec2Resource, 't2.micro', securityGroupStandaloneId, "172.31.1.5", "standalone", script)
+    # create standalone instance
+    standAloneDns = createInstance(ec2Resource, 't2.micro', securityGroupStandaloneId, "172.31.1.5", "standalone")
 
-    script = loadScript(
-        'proxy.sh',
-    )
-    proxyDns = createInstance(ec2Resource, 't2.large', securityGroupProxyId, "172.31.1.10", "proxy", script)
+    proxyDns = createInstance(ec2Resource, 't2.large', securityGroupProxyId, "172.31.1.10", "proxy")
+
+    gateKeeperDns = createInstance(ec2Resource, 't2.large', securityGroupManagerId, "172.31.1.11", "gatekeeper")
 
     print('Instances initiated!')
 

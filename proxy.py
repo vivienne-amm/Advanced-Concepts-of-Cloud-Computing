@@ -1,9 +1,12 @@
+#!/usr/bin/python
+"""Python module that receives TCP requests."""
+import re
+
+import socket
 import pymysql
-import sys
 import random
 from pythonping import ping
 from sshtunnel import SSHTunnelForwarder
-
 
 ips = {
     'master': '172.31.1.1',
@@ -13,6 +16,7 @@ ips = {
 }
 
 workers = ['worker1', 'worker2', 'worker3']
+master = 'master'
 
 # Params to setup the SSH tunnel forwarder
 ssh_config = {
@@ -31,7 +35,6 @@ db_config = {
     'autocommit': True
 }
 
-
 def getLowestPingWorker():
     """
     Returns the name of the fastest worker
@@ -49,6 +52,47 @@ def getLowestPingWorker():
 
     return best
 
+def direct(query):
+    """
+    Runs the sql commands on direct strategy
+
+    :param: query to run
+    """
+    print("directly")
+    executeCommands("master", query)
+
+def randomized(query):
+    """
+    Runs the sql commands on random strategy
+
+    :param: query to run
+    """
+    print("ranomized")
+    print("needsWriteAccess(query): " + str(needsWriteAccess(query)))
+
+    if not needsWriteAccess(query):
+        random_worker = random.choice(workers)
+        print("read on " + random_worker)
+        executeCommands(random_worker, query)
+    else:
+        print("Need Write access therefore exxecuted directly")
+        direct(query)
+
+def customized(query):
+    """
+    Runs the sql commands on custom strategy
+
+    :param: query to run
+    """
+    print("customized")
+
+    if not needsWriteAccess(query):
+        fastestWorker = getLowestPingWorker()
+        if fastestWorker != "":
+            print("read on " + fastestWorker)
+            executeCommands(fastestWorker, query)
+    else:
+        direct(query)
 
 def needsWriteAccess(query):
     """
@@ -63,6 +107,7 @@ def needsWriteAccess(query):
         if len(keyword) > 0 and keyword[0] in ["delete", "update", "create", "insert", "grant", "revoke"]:
             return True
     return False
+
 
 
 def executeCommands(name, commands):
@@ -95,51 +140,6 @@ def executeCommands(name, commands):
             connection.close()
 
 
-def direct(query):
-    """
-    Runs the sql commands on direct strategy
-
-    :param: query to run
-    """
-    print("directly")
-    executeCommands("master", query)
-
-
-def randomized(query):
-    """
-    Runs the sql commands on random strategy
-
-    :param: query to run
-    """
-    print("ranomized")
-    print("needsWriteAccess(query): " + str(needsWriteAccess(query)))
-
-    if not needsWriteAccess(query):
-        random_worker = random.choice(workers)
-        print("read on " + random_worker)
-        executeCommands(random_worker, query)
-    else:
-        print("Need Write access therefore exxecuted directly")
-        direct(query)
-
-
-def customized(query):
-    """
-    Runs the sql commands on custom strategy
-
-    :param: query to run
-    """
-    print("customized")
-
-    if not needsWriteAccess(query):
-        fastestWorker = getLowestPingWorker()
-        if fastestWorker != "":
-            print("read on " + fastestWorker)
-            executeCommands(fastestWorker, query)
-    else:
-        direct(query)
-
-
 # route every POST requests to direct(), regardless of the path (equivalent to a wildcard)
 def sendQuery(type, query):
     """
@@ -159,50 +159,57 @@ def sendQuery(type, query):
         direct(query)
 
 
-if __name__ == "__main__":
-    # if the first argument isn't specified, ask user to chose a proxy type
-    type = ""
-    if len(sys.argv) == 1:
-        print("choose a proxy type:")
-        print("-- (1) direct - default")
-        print("-- (2) random")
-        print("-- (3) custom")
-        type = input(">>> ")
+def extract_response_values(data):
+    data = data.decode('utf-8').strip()
 
-    # if the first argument is specified, use it as the proxy type
-    if len(sys.argv) > 1:
-        type = sys.argv[1]
-        print('type > 1!')
+    # Define a regex pattern based on the expected format
+    pattern = re.compile(r'^(direct|custom|random)\|(.*)$', re.IGNORECASE)
 
-    if type in ["2", "random"]:
-        type = "random"
-        print('type random')
+    # Use the pattern to match against the response
+    match = pattern.match(data)
 
-    elif type in ["3", "custom"]:
-        type = "custom"
-        print('type custom')
+    # If there is a match, extract the values and return them
+    if match:
+        proxy_type, sql_command = match.groups()
+        print("proxy_type" + proxy_type)
+        print("sql command" + sql_command)
 
+        return proxy_type, sql_command
     else:
-        type = "direct"
-        print('type direct')
+        print("return none,none bevause no regex match")
+        return None, None
 
+def main():
+    """Main."""
+    #proxy port
+    port = 5001
 
-    # if the second argument isn't specified, ask for user to enter query/queries in the terminal
-    if len(sys.argv) < 3:
-        print('type < 3!')
-        text = ""
-        while True:
-            line = input("> ")
-            text += line + "\n"
-            if len(line) > 0 and line[-1] == ";":
-                sendQuery(type, text)
-                text = ""
-            if line.lower().count("exit") > 0:
-                break
+    s = socket.socket()
 
-    # if the second argument is specified, run the commands in the file if possible
-    if len(sys.argv) == 3:
-        print('type == 3!')
-        with open(sys.argv[2]) as file:
-            sendQuery(type, file.read())
+    print("socket created")
+    s.bind(('0.0.0.0', port))
+    print("socket bound")
+
+    s.listen(1)  # Listen to one connection
+    conn, addr = s.accept()
+    print('connection from: ' + str(addr))
+
+    while True:
+        data = conn.recv(409600)  # Max bytes
+        print('Data: ' + str(data))
+
+        proxy_type, sql_command = extract_response_values(data)
+
+        if proxy_type is not None and sql_command is not None:
+            print(f"Proxy Type: {proxy_type}")
+            print(f"SQL Command: {sql_command}")
+            sendQuery(proxy_type, sql_command)
+            response = "Processed successfully!"
+            s.send(str.encode(response))
+        else:
+            print("Invalid response!")
+
+if __name__ == '__main__':
+    main()
+
 
