@@ -30,7 +30,7 @@ db_config = {
     'host': ips["master"],
     'user': 'proxy_user',
     'password': 'super_secret_proxy_password',
-    'db': 'mycluster',
+    'db': 'sakila',
     'port': 3306,
     'autocommit': True
 }
@@ -123,17 +123,18 @@ def executeCommands(name, commands):
 
         try:
             with connection.cursor() as cursor:
-                # Execute a MySQL query
-                sql = 'SELECT * FROM actor LIMIT 10;'
+                print("Executing query: ", commands)
+
                 cursor.execute(commands)
 
-                # Fetch the results of the query
-                result = cursor.fetchall()
+                if cursor.description is not None:
+                    # Fetch the results of the query
+                    result = cursor.fetchall()
 
-                # Print the results
-                print(tuple([i[0] for i in cursor.description]))
-                for line in result:
-                    print(line)
+                    # Print the results
+                    print(tuple([i[0] for i in cursor.description]))
+                    for line in result:
+                        print(line)
         finally:
             # Close the connection to the MySQL cluster
             connection.close()

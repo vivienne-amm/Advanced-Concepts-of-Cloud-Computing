@@ -80,3 +80,11 @@ sudo /home/ubuntu/venv/bin/python3 proxy.py
 On gatekeeper:
 sudo /home/ubuntu/venv/bin/python3 gatekeeper.py
 sudo /home/ubuntu/venv/bin/python3 client.py
+
+
+
+USE saklia;
+
+CREATE USER 'proxy_user'@'%' IDENTIFIED BY 'super_secret_proxy_password';
+GRANT ALL PRIVILEGES ON sakila.* TO 'proxy_user'@'%'; 
+FLUSH PRIVILEGES;

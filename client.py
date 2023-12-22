@@ -57,15 +57,19 @@ if __name__ == '__main__':
                 sendData = f"{type}|{sql_command}"
                 print(sendData)
 
+                print("sending data")
                 s.send(str.encode(sendData))
+                print(" data sent")
+
                 time.sleep(0.1)
                 # s.send(str.encode("hello server!"))
                 msg = s.recv(2048)
+                print("message received")
                 print(msg)
                 print(msg.decode())
-                s.close();
                 sql_command = ""
             if line.lower().count("exit") > 0:
                 break
 
+    s.close();
 

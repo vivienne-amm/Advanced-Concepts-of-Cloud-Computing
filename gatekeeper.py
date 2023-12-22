@@ -51,6 +51,9 @@ def main():
         print("Connected to the trusted host!")
         trustedSocket.send(data)
 
+        response_to_client = "Your message was received and processed successfully!"
+        conn.send(response_to_client.encode('utf-8'))
+
     trustedSocket.close()
     s.close()
     print("sockets closed on proxy")
