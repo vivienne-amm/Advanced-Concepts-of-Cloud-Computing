@@ -53,6 +53,7 @@ def main():
 
     trustedSocket.close()
     s.close()
+    print("sockets closed on proxy")
 
 if __name__ == '__main__':
     main()

@@ -205,9 +205,12 @@ def main():
             sendQuery(proxy_type, sql_command)
             #response = "Processed successfully!"
             #s.send(str.encode(response))
-            s.close()
+
         else:
             print("Invalid response!")
+
+    s.close()
+    print("socket closed on proxy")
 
 if __name__ == '__main__':
     main()

@@ -4,7 +4,8 @@ https://www.digitalocean.com/community/tutorials/how-to-create-a-multi-node-mysq
 
 To run the code following steps need to be executed:
 
-1. connect to master with ssh and execute manager_setup on it 
+1. run in directory: find . -type f -name "*.sh" -exec chmod +x {} \;
+connect to master with ssh and execute manager_setup on it 
 2. connect to workers with ssh and execute worker_setup1 on it
 3. benchmark script (on master?) 
 3. connect to standalone with ssh and execute standalone_setup on it
@@ -14,24 +15,24 @@ To run the code following steps need to be executed:
 - Use main.py to initialize python3 main.py UP, tear down python3 main.py DOWN, or run a workload on the architecture python3 main.py RUN.
 
 #gatekeeper
-ec2-3-237-84-87
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-237-84-87.compute-1.amazonaws.com
+ec2-3-222-177-119
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-222-177-119.compute-1.amazonaws.com
 
 
 #proxy
-ec2-3-238-141-231
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-238-141-231.compute-1.amazonaws.com
+ec2-3-239-150-182
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-239-150-182.compute-1.amazonaws.com
 
 #manager
-ec2-44-199-233-230
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-199-233-230.compute-1.amazonaws.com
+ec2-34-238-248-34
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-34-238-248-34.compute-1.amazonaws.com
 
 #workers
 ec2-18-234-139-173
 ec2-3-235-3-140
 ec2-44-200-133-26.
 
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-200-133-26.compute-1.amazonaws.com
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-237-237-116.compute-1.amazonaws.com
 
 scp -r -i /Users/vivi/Downloads/vockey.pem gatekeeper.py ubuntu@ec2-3-237-61-24.compute-1.amazonaws.com:/home/ubuntu
 
@@ -41,12 +42,14 @@ Send To Proxy:ec2-44-204-211-99
 scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-204-211-99.compute-1.amazonaws.com:/home/ubuntu
 
 #proxy
-scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-238-141-231.compute-1.amazonaws.com:/home/ubuntu
-scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-238-141-231.compute-1.amazonaws.com:/home/ubuntu
+ec2-3-239-150-182
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-239-150-182.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-239-150-182.compute-1.amazonaws.com:/home/ubuntu
 
 #gatekeeper
-scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-237-84-87.compute-1.amazonaws.com:/home/ubuntu
-scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-237-84-87.compute-1.amazonaws.com:/home/ubuntu
+ec2-3-222-177-119
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-222-177-119.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-222-177-119.compute-1.amazonaws.com:/home/ubuntu
 
 
 

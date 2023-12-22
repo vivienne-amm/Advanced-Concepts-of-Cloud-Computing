@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 SUBNET_ID = 'subnet-030172ef91484d431'
 
 # globals + helpers
-security_group_orchestrator_name = "security_group_orchestrator"
+security_group_gatekeeper_name = "security_group_gatekeeper"
 security_group_workers_name = "security_group_workers"
 security_group_standalone_name = "security_group_standalone"
 security_group_proxy_name = "security_group_proxy"
@@ -181,7 +181,7 @@ def createSecurityGroupWorker(client, vpcId):
          'IpProtocol': '-1',
          'FromPort': -1,
          'ToPort': -1,
-         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+         'IpRanges': [{'CidrIp': '172.31.0.0/20'}]
     }
     #          'IpRanges': [{'CidrIp': '172.31.0.0/20'}]
     ssh_rule = {
@@ -235,7 +235,7 @@ def get_security_group_by_name(client, group_name):
     return group_id
 
 def get_manager_security_group(client):
-    return get_security_group_by_name(client, security_group_orchestrator_name)
+    return get_security_group_by_name(client, security_group_gatekeeper_name)
 
 
 def get_worker_security_group(client):
@@ -258,12 +258,17 @@ def createSecurityGroupProxy(client, vpcId):
 
     # ingress + egress rules
     allow_all_traffic_rule = {
-        'IpProtocol': '-1',
-        'FromPort': -1,
-        'ToPort': -1,
-        'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
+        'IpProtocol': 'tcp',
+        'FromPort': 3306,
+        'ToPort': 3306,
+        'IpRanges': [{'CidrIp': '172.31.1.0/28'}]  #proxy IP
     }
-
+    allow_gatekeeper_traffic_rule = {
+        'IpProtocol': 'tcp',
+        'FromPort': 5001,  # gatekeeper port
+        'ToPort': 5001,
+        'IpRanges': [{'CidrIp': '172.31.1.0/28'}]
+    }
     ssh_rule = {
         'IpProtocol': 'tcp',
         'FromPort': 22,
@@ -271,33 +276,30 @@ def createSecurityGroupProxy(client, vpcId):
         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
     }
 
-
     # Authorize ingress + egress rules for security group
     client.authorize_security_group_ingress(
         GroupId=group_id,
-        IpPermissions=[allow_all_traffic_rule, ssh_rule]
+        IpPermissions=[allow_all_traffic_rule, allow_gatekeeper_traffic_rule, ssh_rule]
     )
-
 
     # return the ID of created security group
     return group_id
 
 
-def createSecurityGroupManager(client, vpcId):
+def createSecurityGateKeeper(client, vpcId):
     response = client.create_security_group(
-        GroupName=security_group_orchestrator_name,
-        Description='Allow http requests from any ip',
+        GroupName=security_group_gatekeeper_name,
+        Description='A gatekeeper security group',
         VpcId=vpcId
     )
     group_id = response['GroupId']
 
     # ingress + egress rules
-    allow_all_traffic_rule = {
-        'IpProtocol': '-1',
-        'FromPort': -1,
-        'ToPort': -1,
+    tcp_rule = {
+        'IpProtocol': 'tcp',
+        'FromPort': 5001,
+        'ToPort': 5001,
         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
-        #172.31.0.0/20
     }
 
     ssh_rule = {
@@ -307,11 +309,10 @@ def createSecurityGroupManager(client, vpcId):
         'IpRanges': [{'CidrIp': '0.0.0.0/0'}]
     }
 
-
     # Authorize ingress + egress rules for security group
     client.authorize_security_group_ingress(
         GroupId=group_id,
-        IpPermissions=[allow_all_traffic_rule, ssh_rule]
+        IpPermissions=[tcp_rule, ssh_rule]
     )
 
     # return the ID of created security group
@@ -362,7 +363,7 @@ def initArchitecture():
     securityGroupProxyId = get_proxy_security_group(ec2Client)
     securityGroupStandaloneId = get_standalone_security_group(ec2Client)
     if securityGroupManagerId == "":
-        securityGroupManagerId = createSecurityGroupManager(ec2Client, vpcId)
+        securityGroupManagerId = createSecurityGateKeeper(ec2Client, vpcId)
 
     if securityGroupStandaloneId == "":
         securityGroupStandaloneId = createSecurityGroupStandalone(ec2Client, vpcId)
@@ -380,11 +381,12 @@ def initArchitecture():
     worker2 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.3", "worker")
     worker3 = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.4", "worker")
 
-    orchestratorDns = createInstance(ec2Resource, 't2.micro', securityGroupManagerId, "172.31.1.1", "manager")
+    orchestratorDns = createInstance(ec2Resource, 't2.micro', securityGroupWorkerId, "172.31.1.1", "manager")
 
     # create standalone instance
     standAloneDns = createInstance(ec2Resource, 't2.micro', securityGroupStandaloneId, "172.31.1.5", "standalone")
 
+    #proxyDNS
     proxyDns = createInstance(ec2Resource, 't2.large', securityGroupProxyId, "172.31.1.10", "proxy")
 
     gateKeeperDns = createInstance(ec2Resource, 't2.large', securityGroupManagerId, "172.31.1.11", "gatekeeper")
