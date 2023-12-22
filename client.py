@@ -4,6 +4,10 @@
 import socket
 import time
 import sys
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 def get_proxy_type():
     # if the first argument is specified, use it as the proxy type
@@ -47,8 +51,8 @@ def send_data_to_gatekeeper(socket, proxy_type, sql_command):
 
 if __name__ == '__main__':
     # Gatekeeper Id
-    host = "172.31.1.11"
-    port = 5001
+    host = config['Gatekeeper']['Host']
+    port = int(config['Gatekeeper']['Port'])
 
     s = socket.socket()
     print("Socket created")

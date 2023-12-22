@@ -1,6 +1,9 @@
 import socket
 import re
+import configparser
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 def is_valid_response(response):
     # Define a regex pattern based on the expected format
@@ -13,11 +16,8 @@ def is_valid_response(response):
     return bool(match)
 
 def main():
-    """Main."""
-
     host = '0.0.0.0'
-    #Gate keeper port
-    port = 5001
+    port = int(config['Gatekeeper']['Port'])
 
     s = socket.socket()
     print("socket created")
@@ -30,9 +30,10 @@ def main():
     print('connection from: ' + str(addr))
 
     trusted_socket = socket.socket()
-    #proxy
-    destination_ip = "172.31.1.10"
-    dest_port = 5001
+
+    destination_ip = config['Proxy']['Host']
+    dest_port = int(config['Proxy']['Port'])
+
     trusted_socket.connect((destination_ip, dest_port))
 
     while True:

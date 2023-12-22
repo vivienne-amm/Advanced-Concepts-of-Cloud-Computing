@@ -1,32 +1,28 @@
 #!/usr/bin/python
 """Python module that receives TCP requests."""
 import re
-
+import configparser
 import socket
 import pymysql
 import random
 from pythonping import ping
 from sshtunnel import SSHTunnelForwarder
 
-ips = {
-    'master': '172.31.1.1',
-    'worker1': '172.31.1.2',
-    'worker2': '172.31.1.3',
-    'worker3': '172.31.1.4'
-}
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-workers = ['worker1', 'worker2', 'worker3']
+workers = ['Worker1', 'Worker2', 'Worker3']
 
 # Params to setup the SSH tunnel forwarder
 ssh_config = {
     'ssh_username': 'ubuntu',
     'ssh_pkey': 'vockey.pem',
-    'remote_bind_address': (ips["master"], 3306),
+    'remote_bind_address': (config['Master']['Host'], 3306),
 }
 
 # Params to connect to the MySQL cluster
 db_config = {
-    'host': ips["master"],
+    'host': config['Master']['Host'],
     'user': 'user',
     'password': 'password',
     'db': 'sakila',
@@ -38,20 +34,20 @@ def get_fastest_worker():
     fastest_worker = ""
     time = 2000
     for worker in workers:
-        ping_result = ping(ips[worker], count=1, timeout=2)
+        ping_result = ping(config[worker]['Host'], count=1, timeout=2)
         if ping_result.packet_loss != 1 and time > ping_result.rtt_avg_ms:
             fastest_worker = worker
             time = ping_result.rtt_avg_ms
-    print("Best one was  " + fastest_worker)
+    print("Fastest worker was  " + fastest_worker)
 
     return fastest_worker
 
 def direct(query):
     print("Proxy Type: direct")
-    execute_commands("master", query)
+    execute_commands("Master", query)
 
 def randomized(query):
-    print("Proxy Type: ranomized")
+    print("Proxy Type: randomized")
 
     if not needs_write_access(query):
         random_worker = random.choice(workers)
@@ -88,8 +84,8 @@ def execute_commands(name, commands):
     :param: name of the node
     :param: query to check
     """
-    with SSHTunnelForwarder(ips[name], **ssh_config) as tunnel:
-        print("executing on " + name + "with IP: " + ips[name])
+    with SSHTunnelForwarder(config[name]['Host'], **ssh_config) as tunnel:
+        print("executing on " + name + "with IP: " + config[name]['Host'])
         connection = pymysql.connect(**db_config)
 
         try:
