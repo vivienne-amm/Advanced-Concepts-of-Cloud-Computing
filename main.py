@@ -2,21 +2,15 @@ from botoservice import initArchitecture, tearDownArchitecture, checkUntilReady,
 from sys import argv
 import time
 
-from benchmarkservice import getOrchestratorUrl
-
 # Initialize architecture
 if argv[1] == 'UP':
     startTime = time.time()
     print('[MAIN] Initializing architecture!')
     orchestratorDns, standAloneDns = initArchitecture()
-    orchestratorUrl = getOrchestratorUrl(orchestratorDns)
-    standaloneUrl = getOrchestratorUrl(standAloneDns)
 
     print('[MAIN] Architecture initialized, going to sleep for 60 seconds!')
     time.sleep(60)
     print("All workers ready")
-    print(f'Standalone url: {standaloneUrl}')
-    print(f'Orchestrator url: {orchestratorUrl}')
     printElapsedTime(startTime)
 # Tear down architecture
 elif argv[1] == 'DOWN':
