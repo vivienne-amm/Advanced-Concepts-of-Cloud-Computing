@@ -16,7 +16,6 @@ ips = {
 }
 
 workers = ['worker1', 'worker2', 'worker3']
-master = 'master'
 
 # Params to setup the SSH tunnel forwarder
 ssh_config = {
@@ -28,78 +27,52 @@ ssh_config = {
 # Params to connect to the MySQL cluster
 db_config = {
     'host': ips["master"],
-    'user': 'proxy_user',
-    'password': 'super_secret_proxy_password',
+    'user': 'user',
+    'password': 'password',
     'db': 'sakila',
     'port': 3306,
     'autocommit': True
 }
 
-def getLowestPingWorker():
-    """
-    Returns the name of the fastest worker
-
-    :return name of worker with the lowest ping
-    """
-    best = ""
+def get_fastest_worker():
+    fastest_worker = ""
     time = 2000
     for worker in workers:
         ping_result = ping(ips[worker], count=1, timeout=2)
         if ping_result.packet_loss != 1 and time > ping_result.rtt_avg_ms:
-            best = worker
+            fastest_worker = worker
             time = ping_result.rtt_avg_ms
-    print("Best one was  " + best)
+    print("Best one was  " + fastest_worker)
 
-    return best
+    return fastest_worker
 
 def direct(query):
-    """
-    Runs the sql commands on direct strategy
-
-    :param: query to run
-    """
-    print("directly")
-    executeCommands("master", query)
+    print("Proxy Type: direct")
+    execute_commands("master", query)
 
 def randomized(query):
-    """
-    Runs the sql commands on random strategy
-    :param: query to run
-    """
-    print("ranomized")
-    print("needsWriteAccess(query): " + str(needsWriteAccess(query)))
+    print("Proxy Type: ranomized")
 
-    if not needsWriteAccess(query):
+    if not needs_write_access(query):
         random_worker = random.choice(workers)
         print("read on " + random_worker)
-        executeCommands(random_worker, query)
+        execute_commands(random_worker, query)
     else:
-        print("Needs Write access therefore executed directly")
+        print("Needs write access therefore executed directly")
         direct(query)
 
 def customized(query):
-    """
-    Runs the sql commands on custom strategy
+    print("Proxy Type: customized")
 
-    :param: query to run
-    """
-    print("customized")
-
-    if not needsWriteAccess(query):
-        fastestWorker = getLowestPingWorker()
+    if not needs_write_access(query):
+        fastestWorker = get_fastest_worker()
         if fastestWorker != "":
             print("read on " + fastestWorker)
-            executeCommands(fastestWorker, query)
+            execute_commands(fastestWorker, query)
     else:
         direct(query)
 
-def needsWriteAccess(query):
-    """
-    Checks if a query needs write access.
-
-    :param: query to check
-    :return true if query needs write access, false otherwise.
-    """
+def needs_write_access(query):
     instructions = query.split(";")
     for instruction in instructions:
         keyword = instruction.strip().lower().split()
@@ -107,9 +80,7 @@ def needsWriteAccess(query):
             return True
     return False
 
-
-
-def executeCommands(name, commands):
+def execute_commands(name, commands):
     """
     Runs the sql commands on the specified node.
     Prints the output of the command
@@ -141,7 +112,7 @@ def executeCommands(name, commands):
 
 
 # route every POST requests to direct(), regardless of the path (equivalent to a wildcard)
-def sendQuery(type, query):
+def send_query(type, query):
     """
     Runs the sql commands
 
@@ -180,13 +151,10 @@ def extract_response_values(data):
         return None, None
 
 def main():
-    """Main."""
     #proxy port
     port = 5001
 
     s = socket.socket()
-
-    print("socket created")
     s.bind(('0.0.0.0', port))
     print("socket bound")
 
@@ -203,7 +171,7 @@ def main():
         if proxy_type is not None and sql_command is not None:
             print(f"Proxy Type: {proxy_type}")
             print(f"SQL Command: {sql_command}")
-            sendQuery(proxy_type, sql_command)
+            send_query(proxy_type, sql_command)
             #response = "Processed successfully!"
             #s.send(str.encode(response))
 
