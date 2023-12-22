@@ -1,5 +1,3 @@
-#!/usr/bin/python
-"""Python module that receives TCP requests."""
 import re
 import configparser
 import socket
@@ -13,14 +11,14 @@ config.read('config.ini')
 
 workers = ['Worker1', 'Worker2', 'Worker3']
 
-# Params to setup the SSH tunnel forwarder
+# Setup parameters SSH tunnel forwarder
 ssh_config = {
     'ssh_username': 'ubuntu',
     'ssh_pkey': 'vockey.pem',
     'remote_bind_address': (config['Master']['Host'], 3306),
 }
 
-# Params to connect to the MySQL cluster
+# MySQL cluster connection parameters
 db_config = {
     'host': config['Master']['Host'],
     'user': 'user',
@@ -31,6 +29,7 @@ db_config = {
 }
 
 def get_fastest_worker():
+    # Find the fastest worker node based on ping response time
     fastest_worker = ""
     time = 2000
     for worker in workers:
@@ -43,47 +42,40 @@ def get_fastest_worker():
     return fastest_worker
 
 def direct(query):
+    # Execute query directly on the master node
     print("Proxy Type: direct")
-    execute_commands("Master", query)
+    run_commands("Master", query)
 
-def randomized(query):
+def random(query):
+    # Execute query on a randomly selected worker node or directly if it needs write access
     print("Proxy Type: randomized")
 
     if not needs_write_access(query):
         random_worker = random.choice(workers)
         print("read on " + random_worker)
-        execute_commands(random_worker, query)
+        run_commands(random_worker, query)
     else:
         print("Needs write access therefore executed directly")
         direct(query)
 
-def customized(query):
+def custom(query):
+    # Execute query on a on fastest selected worker node or on master if it needs write access
     print("Proxy Type: customized")
 
     if not needs_write_access(query):
         fastestWorker = get_fastest_worker()
         if fastestWorker != "":
             print("read on " + fastestWorker)
-            execute_commands(fastestWorker, query)
+            run_commands(fastestWorker, query)
     else:
         direct(query)
 
 def needs_write_access(query):
-    instructions = query.split(";")
-    for instruction in instructions:
-        keyword = instruction.strip().lower().split()
-        if len(keyword) > 0 and keyword[0] in ["delete", "update", "create", "insert", "grant", "revoke"]:
-            return True
-    return False
+    # Check if the query requires write access
+    keywords = [instruction.strip().lower().split()[0] for instruction in query.split(";") if instruction.strip()]
+    return any(keyword in ["delete", "update", "create", "insert", "grant", "revoke"] for keyword in keywords)
 
-def execute_commands(name, commands):
-    """
-    Runs the sql commands on the specified node.
-    Prints the output of the command
-
-    :param: name of the node
-    :param: query to check
-    """
+def run_commands(name, commands):
     with SSHTunnelForwarder(config[name]['Host'], **ssh_config) as tunnel:
         print("executing on " + name + "with IP: " + config[name]['Host'])
         connection = pymysql.connect(**db_config)
@@ -107,21 +99,15 @@ def execute_commands(name, commands):
             connection.close()
 
 
-# route every POST requests to direct(), regardless of the path (equivalent to a wildcard)
 def send_query(type, query):
-    """
-    Runs the sql commands
 
-    :param: type of strategy used
-    :param: query to run
-    """
     type = str(type).strip()
     query = str(query).strip()
 
     if type == "custom":
-        customized(query)
+        custom(query)
     elif type == "random":
-        randomized(query)
+        random(query)
     else:
         direct(query)
 
@@ -143,12 +129,11 @@ def extract_response_values(data):
 
         return proxy_type, sql_command
     else:
-        print("return none,none bevause no regex match")
+        print("return none,none because no regex match")
         return None, None
 
 def main():
-    #proxy port
-    port = 5001
+    port = int(config['Proxy']['Port'])
 
     s = socket.socket()
     s.bind(('0.0.0.0', port))
@@ -159,7 +144,7 @@ def main():
     print('connection from: ' + str(addr))
 
     while True:
-        data = conn.recv(409600)  # Max bytes
+        data = conn.recv(2048)  # Max bytes
         print('Data: ' + str(data))
 
         proxy_type, sql_command = extract_response_values(data)
@@ -168,9 +153,6 @@ def main():
             print(f"Proxy Type: {proxy_type}")
             print(f"SQL Command: {sql_command}")
             send_query(proxy_type, sql_command)
-            #response = "Processed successfully!"
-            #s.send(str.encode(response))
-
         else:
             print("Invalid response!")
 

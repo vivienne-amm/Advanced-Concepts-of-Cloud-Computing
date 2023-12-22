@@ -24,7 +24,8 @@ def main():
     s.bind((host, port))
     print("socket bound with host " + host)
 
-    s.listen(1)  # Listen to one connection
+    # Listen for incoming connections
+    s.listen(1)
 
     conn, addr = s.accept()
     print('connection from: ' + str(addr))
@@ -34,13 +35,17 @@ def main():
     destination_ip = config['Proxy']['Host']
     dest_port = int(config['Proxy']['Port'])
 
+    # Connect to the proxy
     trusted_socket.connect((destination_ip, dest_port))
 
     while True:
-        data = conn.recv(2048)  # Max bytes
+        # Receive data from the connected user
+        data = conn.recv(2048)
         response_decode = data.decode('utf-8').strip()
+
         if not data:
             break
+
         print('from connected user: ' + response_decode)
 
         if not is_valid_response(response_decode):
@@ -49,6 +54,7 @@ def main():
         print("Connected to the trusted host!")
         trusted_socket.send(data)
 
+        # Send a response to the connected user
         response_to_client = "Your message was received and processed successfully!"
         conn.send(response_to_client.encode('utf-8'))
 
