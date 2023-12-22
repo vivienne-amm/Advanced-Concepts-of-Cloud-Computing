@@ -1,4 +1,4 @@
-from botoservice import initArchitecture, tearDownArchitecture, checkUntilReady, printElapsedTime
+from botoservice import init_architecture, tear_down_architecture, print_elapsed_time
 from sys import argv
 import time
 
@@ -6,20 +6,21 @@ import time
 if argv[1] == 'UP':
     startTime = time.time()
     print('[MAIN] Initializing architecture!')
-    orchestratorDns, standAloneDns = initArchitecture()
+    init_architecture()
 
     print('[MAIN] Architecture initialized, going to sleep for 60 seconds!')
     time.sleep(60)
     print("All workers ready")
-    printElapsedTime(startTime)
+    print_elapsed_time(startTime)
+
 # Tear down architecture
 elif argv[1] == 'DOWN':
     print('[MAIN] Tearing down architecture!')
-    tearDownArchitecture()
+    tear_down_architecture()
     print('[MAIN] Finished!')
 
 # Does tearing down without deleting security groups to save time during debugging
 elif argv[1] == 'DD':
     print('[MAIN] Tearing down architecture!')
-    tearDownArchitecture(False)
+    tear_down_architecture(False)
     print('[MAIN] Finished!')
