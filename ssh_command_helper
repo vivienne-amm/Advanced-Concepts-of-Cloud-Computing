@@ -1,6 +1,16 @@
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-193-1-247.compute-1.amazonaws.com
 
-scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com:/home/ubuntu
-scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-193-1-247.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-193-1-247.compute-1.amazonaws.com:/home/ubuntu
 
 
+scp -r -i /Users/vivi/Downloads/vockey.pem ./proxy.py ubuntu@ec2-44-193-1-247.compute-1.amazonaws.com:/home/ubuntu
+
+
+
+
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-235-163-182.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-235-163-182.compute-1.amazonaws.com:/home/ubuntu
+
+
+scp -r -i /Users/vivi/Downloads/vockey.pem ./gatekeeper.py ubuntu@ec2-3-235-163-182.compute-1.amazonaws.com:/home/ubuntu

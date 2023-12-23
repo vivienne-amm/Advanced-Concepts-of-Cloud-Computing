@@ -1,3 +1,4 @@
+#!/bin/bash
 # Update package information and install required dependencies
 sudo apt-get update
 sudo apt-get install libncurses5 libaio1 libmecab2 sysbench -y

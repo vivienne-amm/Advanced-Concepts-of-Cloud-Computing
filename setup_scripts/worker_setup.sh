@@ -19,7 +19,7 @@ ndb-connectstring=ip-172-31-1-1.ec2.internal
 # Creating data directory
 sudo mkdir -p /usr/local/mysql/data
 
-# Add  instructions for system to start, stop and restart ndb_mgmd
+# Add instructions for system to start, stop & restart ndb_mgmd
 echo "
 [Unit]
 Description=MySQL NDB Data Node Daemon
@@ -36,7 +36,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 " | sudo tee /etc/systemd/system/ndbd.service
 
-# Reload systemd manager, enable ndb_mgmd and start ndb_mgmd
+# Reload manager, enable ndb_mgmd and start ndb_mgmd
 sudo systemctl daemon-reload
 sudo systemctl enable ndbd
 sudo systemctl start ndbd

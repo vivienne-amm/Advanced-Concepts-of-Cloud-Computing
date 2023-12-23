@@ -1,3 +1,4 @@
+#!/bin/bash
 # MySQL Cluster Benchmark Script execute after manager and worker setups are completed
 # Download Sakila database
 cd /home/ubuntu

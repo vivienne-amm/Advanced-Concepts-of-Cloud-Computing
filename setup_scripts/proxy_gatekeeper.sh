@@ -1,4 +1,3 @@
-#!/bin/bash
 sudo apt-get update -y
 sudo apt-get install python3-venv nginx dos2unix -y
 
@@ -13,7 +12,7 @@ cd /home/ubuntu
 chmod 400 vockey.pem
 
 # setup python virtual environment
-python3 -m venv venv
+python3.6 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt

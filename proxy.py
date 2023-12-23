@@ -49,9 +49,9 @@ def direct(query):
     run_commands("Master", query)
 
 
-def random(query):
+def randomized(query):
     # Execute query on a randomly selected worker node or directly if it needs write access
-    print("Proxy Type: randomized")
+    print("Proxy Type: random")
 
     if not needs_write_access(query):
         random_worker = random.choice(workers)
@@ -112,7 +112,7 @@ def send_query(type, query):
     if type == "custom":
         custom(query)
     elif type == "random":
-        random(query)
+        randomized(query)
     else:
         direct(query)
 
