@@ -1,0 +1,6 @@
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com
+
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com:/home/ubuntu
+
+

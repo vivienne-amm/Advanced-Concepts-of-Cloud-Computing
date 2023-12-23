@@ -4,13 +4,11 @@ import time
 
 # Initialize architecture
 if argv[1] == 'UP':
-    startTime = time.time()
     print('[MAIN] Initializing architecture!')
     init_architecture()
-
     print('[MAIN] Architecture initialized, going to sleep for 60 seconds!')
     time.sleep(60)
-    print("All workers ready")
+    print('[MAIN] Finished!')
 
 # Tear down architecture
 elif argv[1] == 'DOWN':
