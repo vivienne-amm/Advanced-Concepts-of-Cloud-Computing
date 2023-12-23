@@ -7,9 +7,9 @@ This is the final project _Scaling Databases and Implementing Cloud Design Patte
 - Create an `.env` file with your AWS credentials. An example with the valid format can seen in the `.env.example` file.
 - Run `find . -type f -name "*.sh" -exec chmod +x {} ＼;`  in the setup_scripts directory: 
 - Use `main.py UP` to initialize the architecture.
-- Connect to the Master instance with ssh and execute the commands from the `manager_setup.sh` file on it.
-- Connect to the Worker instances with ssh and execute the commands from the `worker_setup.sh` file on it.
-- Connect to the Proxy and the Gatekeeper instances with ssh and execute the commands from the `proxy_gatekeeper.sh` file on it.
+- Connect to the Master instance with ssh and execute the commands from the `setup_scripts/manager_setup.sh` file on it.
+- Connect to the Worker instances with ssh and execute the commands from the `setup_scripts/worker_setup.sh` file on it.
+- Connect to the Proxy and the Gatekeeper instances with ssh and execute the commands from the `setup_scripts/proxy_gatekeeper.sh` file on it.
 
 To SSH onto an instance adapt the following command:
 `ssh -v -i <PATH_TO_VOCKEY.PEM_ON_LOCAL_MACHINE> ubuntu@<INSTANCE_DNS>`
@@ -18,7 +18,7 @@ To SSH onto an instance adapt the following command:
 The sysbench tool is used to conduct a read-write 60-second benchmark with 6 threads on the MySQL _sakila_ database with a table size of 100,000 records.
 - **Standalone instance**: the benchmark is run automatically on initalization of the instance (using the standalone_setup.sh script in the Userdata). 
    - The benchmark results can be found on the Standalone instance at `/home/ubuntu/results.txt`.
-- **MySQL cluster**: execute the commands of the `benchmark.sh` script on the master instance to run the benchmark.
+- **MySQL cluster**: execute the commands of the `setup_scripts/benchmark.sh` script on the master instance to run the benchmark.
    - The benchmark results can be found on the Master instance at `/home/ubuntu/results.txt`.
 
 
@@ -42,18 +42,18 @@ As example, the actor table of the sakila database (or any other table defined i
 Following are some example SQL commands that can be entered after starting client.py:
 
 #### SELECT:
-- SELECT * FROM actor ORDER BY actor_id DESC LIMIT 5;
+- `SELECT * FROM actor ORDER BY actor_id DESC LIMIT 5;`
 
 #### INSERT:
-- SELECT * FROM actor ORDER BY actor_id DESC LIMIT 5;
-- INSERT INTO actor(first_name, last_name) VALUES ("MARGOT", "ROBBIE");
-- SELECT * FROM actor ORDER BY actor_id DESC LIMIT 5;
+- `SELECT * FROM actor ORDER BY actor_id DESC LIMIT 5;`
+- `INSERT INTO actor(first_name, last_name) VALUES ("MARGOT", "ROBBIE");`
+- `SELECT * FROM actor ORDER BY actor_id DESC LIMIT 5;`
 
 #### UPDATE:
-- SELECT * FROM actor WHERE last_name="REYNOLDS";
-- UPDATE actor SET first_name="Ryan" WHERE actor_id=135;
-- SELECT * FROM actor WHERE last_name="REYNOLDS";
+- `SELECT * FROM actor WHERE last_name="REYNOLDS";`
+- `UPDATE actor SET first_name="Ryan" WHERE actor_id=135;`
+- `SELECT * FROM actor WHERE last_name="REYNOLDS";`
 
 ### Tearing down the architecture
-- At the end, tear down the architecture using python3 main.py DOWN.
+- At the end, tear down the architecture using `python3 main.py DOWN`.
 - Don't forget to end the AWS session.
