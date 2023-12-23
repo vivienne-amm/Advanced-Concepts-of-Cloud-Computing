@@ -6,15 +6,12 @@ Vivienne Amm, 2310805
 - Create an `.env` file with your AWS credentials. An example with the valid format can seen in the `.env.example` file.
 - Run `find . -type f -name "*.sh" -exec chmod +x {} ＼;`  in the setup_scripts directory: 
 - Use `main.py UP` to initialize the architecture
-
-To SSH onto an instance adapt the following command:
-`ssh -v -i <PATH_TO_VOCKEY.PEM_ON_LOCAL_MACHINE> ubuntu@<INSTANCE_DNS>`
-
 - connect to the Master instance with ssh and execute the commands from the `manager_setup.sh` file on it 
 - connect to the Worker instances with ssh and execute the commands from the `worker_setup.sh` file on it
 - connect to the Proxy and the Gatekeeper instances with ssh and execute the commands from the `proxy_gatekeeper.sh` file on it
 
-
+To SSH onto an instance adapt the following command:
+`ssh -v -i <PATH_TO_VOCKEY.PEM_ON_LOCAL_MACHINE> ubuntu@<INSTANCE_DNS>`
 
 ### Benchmarking MySQL Standalone vs MySQL Cluster
 The sysbench tool is used to conduct a read-write 60-second benchmark with 6 threads on the MySQL _sakila_ database with a table size of 100,000 records.
@@ -22,6 +19,7 @@ The sysbench tool is used to conduct a read-write 60-second benchmark with 6 thr
    - The benchmark results can be found on the Standalone instance at `/home/ubuntu/results.txt`.
 - **MySQL cluster**: execute the commands of the `benchmark.sh` script on the master instance to run the benchmark.
    - The benchmark results can be found on the Master instance at `/home/ubuntu/results.txt`.
+
 
 ### Testing the proxy and gatekeeper
 1. SSH on the **master** instance and execute the following commands:
@@ -40,7 +38,7 @@ The sysbench tool is used to conduct a read-write 60-second benchmark with 6 thr
       Examples for this can be found in the section below.
 
 
-###Example SQL commands for demonstration: 
+### Example SQL commands for demonstration: 
 As example, the actor table of the sakila database (or any other table defined in the sakila) can be used.
 Following are some example SQL commands that can be entered after starting client.py:
 
