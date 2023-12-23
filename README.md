@@ -1,6 +1,7 @@
-# LOG8415_TP3
+# Final Project: Advanced Concepts of Cloud Computing (LOG8415)
 Vivienne Amm, 2310805
 
+This is the final project _Scaling Databases and Implementing Cloud Design Patterns_ created for the course _Advanced Concepts of Cloud Computing_ at Polytechnique Montreal in Fall Trimester 2023.
 ### Initializing the architecture
 - Make sure you have a python3 executable on your machine. You will also need 3 python libraries - boto3 and python-dotenv. If you are missing them execute the command `pip install -r main_req.txt`.
 - Create an `.env` file with your AWS credentials. An example with the valid format can seen in the `.env.example` file.
@@ -33,10 +34,8 @@ The sysbench tool is used to conduct a read-write 60-second benchmark with 6 thr
     - `sudo /home/ubuntu/venv/bin/python3 proxy.py`
 3. SSH on the **gatekeeper** instance and execute the following command:
     - `sudo /home/ubuntu/venv/bin/python3 gatekeeper.py`
-4. Execute `sudo /home/ubuntu/venv/bin/python3 client.py`
-    - This will prompt you to enter the proxy method you want to use (direct/ random/ custom) and will ask you to enter an SQL command. 
-      Examples for this can be found in the section below.
-
+4. Run `python3 client.py`
+    - This will prompt you to enter the proxy method you want to use (direct/ random/ custom) and will ask you to enter an SQL command.
 
 ### Example SQL commands for demonstration: 
 As example, the actor table of the sakila database (or any other table defined in the sakila) can be used.
