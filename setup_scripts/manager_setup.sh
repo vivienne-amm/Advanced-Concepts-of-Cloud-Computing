@@ -1,3 +1,4 @@
+# Update package information and install required dependencies
 sudo apt-get update
 sudo apt-get install libncurses5 libaio1 libmecab2 sysbench -y
 cd /home/ubuntu
@@ -7,7 +8,7 @@ wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster-communi
 sudo dpkg -i mysql-cluster-community-management-server_7.6.6-1ubuntu18.04_amd64.deb
 rm mysql-cluster-community-management-server_7.6.6-1ubuntu18.04_amd64.deb
 
-# adding sql cluster config file
+# Configure MySQL Cluster with specified data node details
 sudo mkdir /var/lib/mysql-cluster
 
 echo "[ndbd default]
@@ -42,6 +43,7 @@ hostname=ip-172-31-1-1.ec2.internal # MySQL server/client on the same instance a
 NodeId=11
 "  | sudo tee /var/lib/mysql-cluster/config.ini
 
+# Configure and start MySQL NDB Cluster Management Server service
 echo "
 [Unit]
 Description=MySQL NDB Cluster Management Server
@@ -69,16 +71,16 @@ mkdir install
 tar -xvf mysql-cluster_7.6.6-1ubuntu18.04_amd64.deb-bundle.tar -C install/
 cd install
 
-# Install MySQL Server
+# Install MySQL Server packages
 sudo dpkg -i mysql-common_7.6.6-1ubuntu18.04_amd64.deb
 sudo dpkg -i mysql-cluster-community-client_7.6.6-1ubuntu18.04_amd64.deb
 sudo dpkg -i mysql-client_7.6.6-1ubuntu18.04_amd64.deb
 
-# Configure installation to avoid using MySQL prompt
+# Configure MySQL Server installation
 sudo debconf-set-selections <<< 'mysql-cluster-community-server_7.6.6 mysql-cluster-community-server/root-pass password root'
 sudo debconf-set-selections <<< 'mysql-cluster-community-server_7.6.6 mysql-cluster-community-server/re-root-pass password root'
 
-# Install the rest of the packages
+# Install the remaining MySQL Server packages
 sudo dpkg -i mysql-cluster-community-server_7.6.6-1ubuntu18.04_amd64.deb
 sudo dpkg -i mysql-server_7.6.6-1ubuntu18.04_amd64.deb
 

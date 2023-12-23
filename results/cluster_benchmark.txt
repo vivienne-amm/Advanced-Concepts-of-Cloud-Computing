@@ -1,4 +1,4 @@
-Results Cluster:
+Example 1 - Results Cluster:
  sysbench 1.0.11 (using system LuaJIT 2.1.0-beta3)
 
 Running the test with following options:

@@ -24,15 +24,15 @@ ec2-3-239-150-182
 ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-239-150-182.compute-1.amazonaws.com
 
 #manager
-ec2-34-238-248-34
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-34-238-248-34.compute-1.amazonaws.com
+ec2-3-235-250-7
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-235-250-7.compute-1.amazonaws.com
 
 #workers
 ec2-18-234-139-173
 ec2-3-235-3-140
-ec2-44-200-133-26.
+ec2-44-200-133-26
 
-ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-237-237-116.compute-1.amazonaws.com
+ssh -v -i /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com
 
 scp -r -i /Users/vivi/Downloads/vockey.pem gatekeeper.py ubuntu@ec2-3-237-61-24.compute-1.amazonaws.com:/home/ubuntu
 
@@ -42,15 +42,14 @@ Send To Proxy:ec2-44-204-211-99
 scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-204-211-99.compute-1.amazonaws.com:/home/ubuntu
 
 #proxy
-ec2-3-239-150-182
-scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-239-150-182.compute-1.amazonaws.com:/home/ubuntu
-scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-239-150-182.compute-1.amazonaws.com:/home/ubuntu
+ec2-3-235-166-251
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-235-166-251.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-235-166-251.compute-1.amazonaws.com:/home/ubuntu
 
 #gatekeeper
 ec2-3-222-177-119
-scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-3-222-177-119.compute-1.amazonaws.com:/home/ubuntu
-scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-3-222-177-119.compute-1.amazonaws.com:/home/ubuntu
-
+scp -r -i /Users/vivi/Downloads/vockey.pem . ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com:/home/ubuntu
+scp -r -i /Users/vivi/Downloads/vockey.pem /Users/vivi/Downloads/vockey.pem ubuntu@ec2-44-222-68-148.compute-1.amazonaws.com:/home/ubuntu
 
 
 On master node:

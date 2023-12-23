@@ -1,6 +1,5 @@
 #!/bin/bash
-# Script to used to create MySQL Cluster slave
-# This script was created following this tutorial: https://www.digitalocean.com/community/tutorials/how-to-create-a-multi-node-mysql-cluster-on-ubuntu-18-04?fbclid=IwAR1m4Y8lPYDZzlpCKiSmsi4b-0roZPSidVfw1yO9dXrJ6YVcHc7Q2MKsVHY
+# tutorial: https://www.digitalocean.com/community/tutorials/how-to-create-a-multi-node-mysql-cluster-on-ubuntu-18-04?fbclid=IwAR1m4Y8lPYDZzlpCKiSmsi4b-0roZPSidVfw1yO9dXrJ6YVcHc7Q2MKsVHY
 
 # Install dependencies
 sudo apt-get update
@@ -20,7 +19,7 @@ ndb-connectstring=ip-172-31-1-1.ec2.internal
 # Creating data directory
 sudo mkdir -p /usr/local/mysql/data
 
-# Add the instructions for systemd to start, stop and restart ndb_mgmd
+# Add  instructions for system to start, stop and restart ndb_mgmd
 echo "
 [Unit]
 Description=MySQL NDB Data Node Daemon
