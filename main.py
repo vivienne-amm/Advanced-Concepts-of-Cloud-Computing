@@ -15,12 +15,3 @@ elif argv[1] == 'DOWN':
     print('[MAIN] Tearing down architecture!')
     tear_down_architecture()
     print('[MAIN] Finished!')
-
-# Does tearing down without deleting security groups to save time during debugging
-elif argv[1] == 'DD':
-    print('[MAIN] Tearing down architecture!')
-    tear_down_architecture(False)
-    print('[MAIN] Finished!')
-
-
-

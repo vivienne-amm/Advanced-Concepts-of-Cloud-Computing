@@ -5,10 +5,10 @@ Vivienne Amm, 2310805
 - Make sure you have a python3 executable on your machine. You will also need 3 python libraries - boto3 and python-dotenv. If you are missing them execute the command `pip install -r main_req.txt`.
 - Create an `.env` file with your AWS credentials. An example with the valid format can seen in the `.env.example` file.
 - Run `find . -type f -name "*.sh" -exec chmod +x {} ＼;`  in the setup_scripts directory: 
-- Use `main.py UP` to initialize the architecture
-- connect to the Master instance with ssh and execute the commands from the `manager_setup.sh` file on it 
-- connect to the Worker instances with ssh and execute the commands from the `worker_setup.sh` file on it
-- connect to the Proxy and the Gatekeeper instances with ssh and execute the commands from the `proxy_gatekeeper.sh` file on it
+- Use `main.py UP` to initialize the architecture.
+- Connect to the Master instance with ssh and execute the commands from the `manager_setup.sh` file on it.
+- Connect to the Worker instances with ssh and execute the commands from the `worker_setup.sh` file on it.
+- Connect to the Proxy and the Gatekeeper instances with ssh and execute the commands from the `proxy_gatekeeper.sh` file on it.
 
 To SSH onto an instance adapt the following command:
 `ssh -v -i <PATH_TO_VOCKEY.PEM_ON_LOCAL_MACHINE> ubuntu@<INSTANCE_DNS>`
@@ -57,4 +57,4 @@ Following are some example SQL commands that can be entered after starting clien
 
 ### Tearing down the architecture
 - At the end, tear down the architecture using python3 main.py DOWN.
-- Don't forget to end the AWS session
+- Don't forget to end the AWS session.

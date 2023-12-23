@@ -8,55 +8,59 @@ SECURITY_GROUP_GATEKEEPER_NAME = "security_group_gatekeeper"
 SECURITY_GROUP_WORKERS_NAME = "security_group_workers"
 SECURITY_GROUP_STANDALONE_NAME = "security_group_standalone"
 SECURITY_GROUP_PROXY_NAME = "security_group_proxy"
+REGION_NAME = 'us-east-1'
 
-regionName = 'us-east-1'
 
 # Load environment variables from .env file
-def get_os_var(keyName):
+def get_os_var(key_name):
     load_dotenv()
-    return os.getenv(keyName)
+    return os.getenv(key_name)
 
-def loadScript(scriptPath):
-    script_template = open(scriptPath, 'r').read()
+
+def load_script(script_path):
+    script_template = open(script_path, 'r').read()
     return script_template
 
+
 # Creates an EC2 instance of specified type and assigns it to security group
-def create_instance(ec2resource, instanceType, securityGroupId, privateIp, tagName, script):
-    script = loadScript(
-         script
-     )
+def create_instance(ec2_resource, instance_type, security_group_id, private_ip, tag_name, script):
+    script = load_script(
+        script
+    )
     try:
-        response = ec2resource.create_instances(
+        response = ec2_resource.create_instances(
             ImageId='ami-0ee23bfc74a881de5',  # taken from https://cloud-images.ubuntu.com/locator/ec2/, map to multiple
             MinCount=1,
             MaxCount=1,
-            InstanceType=instanceType,
+            InstanceType=instance_type,
             UserData=script,
-            SecurityGroupIds=[securityGroupId],
+            SecurityGroupIds=[security_group_id],
             SubnetId='subnet-030172ef91484d431',
             KeyName='vockey',
-            PrivateIpAddress=privateIp,
+            PrivateIpAddress=private_ip,
             TagSpecifications=[
-            {
-                'ResourceType': 'instance',
-                'Tags': [
-                    {
-                        'Key': 'Name',
-                        'Value': tagName
-                    },
-                ]
-            },
+                {
+                    'ResourceType': 'instance',
+                    'Tags': [
+                        {
+                            'Key': 'Name',
+                            'Value': tag_name
+                        },
+                    ]
+                },
             ]
         )
-        print(f"{tagName} Instance created successfully, 1 instance of type {instanceType}. Waiting till running state.")
+        print(
+            f"{tag_name} Instance created successfully, 1 instance of type {instance_type}. Waiting till running state.")
         instance = response[0]
         instance.wait_until_running()
         instance.load()
 
         return instance.public_dns_name
     except ClientError as e:
-        print(f"Creation of type {instanceType} failed!")
+        print(f"Creation of type {instance_type} failed!")
         print(e)
+
 
 # Initialize VPC and return its ID
 def init_vpc(ec2client):
@@ -65,6 +69,7 @@ def init_vpc(ec2client):
         raise Exception('No existing VPC!')
 
     return response['Vpcs'][0]['VpcId']
+
 
 # Create a security group with specified ingress rules
 def create_security_group(client, name, description, vpcId, ingress_rules):
@@ -80,22 +85,25 @@ def create_security_group(client, name, description, vpcId, ingress_rules):
 
     return group_id
 
-def create_security_group_proxy(client, vpcId):
+
+def create_security_group_proxy(client, vpc_id):
     rules = [
-        {'IpProtocol': 'tcp', 'FromPort': 3306, 'ToPort': 3306, 'IpRanges': [{'CidrIp': '172.31.1.0/28'}]},  # proxy IP
-        {'IpProtocol': 'tcp', 'FromPort': 5001, 'ToPort': 5001, 'IpRanges': [{'CidrIp': '172.31.1.0/28'}]},  # gatekeeper port
-        {'IpProtocol': 'tcp', 'FromPort': 22, 'ToPort': 22, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}, # ssh rule
+        {'IpProtocol': 'tcp', 'FromPort': 3306, 'ToPort': 3306, 'IpRanges': [{'CidrIp': '172.31.1.0/28'}]},
+        {'IpProtocol': 'tcp', 'FromPort': 5001, 'ToPort': 5001, 'IpRanges': [{'CidrIp': '172.31.1.0/28'}]},
+        {'IpProtocol': 'tcp', 'FromPort': 22, 'ToPort': 22, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},  # ssh rule
     ]
 
-    return create_security_group(client, SECURITY_GROUP_PROXY_NAME, 'Proxy Security Group', vpcId, rules)
+    return create_security_group(client, SECURITY_GROUP_PROXY_NAME, 'Proxy Security Group', vpc_id, rules)
 
-def create_security_group_gatekeeper(client, vpcId):
+
+def create_security_group_gatekeeper(client, vpc_id):
     rules = [
         {'IpProtocol': 'tcp', 'FromPort': 5001, 'ToPort': 5001, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
-        {'IpProtocol': 'tcp', 'FromPort': 22, 'ToPort': 22, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}, # ssh rule
+        {'IpProtocol': 'tcp', 'FromPort': 22, 'ToPort': 22, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},  # ssh rule
     ]
 
-    return create_security_group(client, SECURITY_GROUP_GATEKEEPER_NAME, 'The gatekeeper security group', vpcId, rules)
+    return create_security_group(client, SECURITY_GROUP_GATEKEEPER_NAME, 'The gatekeeper security group', vpc_id, rules)
+
 
 def create_security_group_workers(client, vpcId):
     rules = [
@@ -105,12 +113,14 @@ def create_security_group_workers(client, vpcId):
 
     return create_security_group(client, SECURITY_GROUP_WORKERS_NAME, 'Cluster Security Group', vpcId, rules)
 
-def create_security_group_standalone(client, vpcId):
+
+def create_security_group_standalone(client, vpc_id):
     rules = [
         {'IpProtocol': '-1', 'FromPort': -1, 'ToPort': -1, 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
     ]
 
-    return create_security_group(client, SECURITY_GROUP_STANDALONE_NAME, 'Security group', vpcId, rules)
+    return create_security_group(client, SECURITY_GROUP_STANDALONE_NAME, 'Security group', vpc_id, rules)
+
 
 # Get security group ID by name
 def get_security_group_by_name(client, group_name):
@@ -123,23 +133,26 @@ def get_security_group_by_name(client, group_name):
     # return id of security group or ""
     return group_id
 
+
 def get_ec2_resource():
     return boto3.resource(
         'ec2',
-        region_name=regionName,
+        region_name=REGION_NAME,
         aws_access_key_id=get_os_var('aws_access_key_id'),
         aws_secret_access_key=get_os_var('aws_secret_access_key'),
         aws_session_token=get_os_var('aws_session_token')
     )
 
-def get_boto3_client(clientType):
+
+def get_boto3_client(client_type):
     return boto3.client(
-        clientType,
-        region_name=regionName,
+        client_type,
+        region_name=REGION_NAME,
         aws_access_key_id=get_os_var('aws_access_key_id'),
         aws_secret_access_key=get_os_var('aws_secret_access_key'),
         aws_session_token=get_os_var('aws_session_token')
     )
+
 
 def init_architecture():
     ec2_client = get_boto3_client('ec2')
@@ -166,13 +179,21 @@ def init_architecture():
         print(f"{sg_info['name']} Security Group ID: {sg_id}")
 
     # create instances
-    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.2", "worker", 'setup_scripts/worker_setup.sh')
-    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.3", "worker", 'setup_scripts/worker_setup.sh')
-    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.4", "worker", 'setup_scripts/worker_setup.sh')
-    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.1", "manager", 'setup_scripts/manager_setup.sh')
-    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_standalone"], "172.31.1.5", "standalone", 'setup_scripts/standalone_setup.sh')
-    create_instance(ec2_resource, 't2.large', security_group_ids["security_group_proxy"], "172.31.1.10", "proxy", 'setup_scripts/proxy_gatekeeper.sh' )
-    create_instance(ec2_resource, 't2.large', security_group_ids["security_group_gatekeeper"], "172.31.1.11", "gatekeeper", 'setup_scripts/proxy_gatekeeper.sh')
+    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.2", "worker",
+                    'setup_scripts/worker_setup.sh')
+    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.3", "worker",
+                    'setup_scripts/worker_setup.sh')
+    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.4", "worker",
+                    'setup_scripts/worker_setup.sh')
+    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_workers"], "172.31.1.1", "manager",
+                    'setup_scripts/manager_setup.sh')
+    create_instance(ec2_resource, 't2.micro', security_group_ids["security_group_standalone"], "172.31.1.5",
+                    "standalone", 'setup_scripts/standalone_setup.sh')
+    create_instance(ec2_resource, 't2.large', security_group_ids["security_group_proxy"], "172.31.1.10", "proxy",
+                    'setup_scripts/proxy_gatekeeper.sh')
+    create_instance(ec2_resource, 't2.large', security_group_ids["security_group_gatekeeper"], "172.31.1.11",
+                    "gatekeeper", 'setup_scripts/proxy_gatekeeper.sh')
+
 
 def shut_down_instances(ec2):
     instances_response = ec2.describe_instances()
@@ -183,18 +204,20 @@ def shut_down_instances(ec2):
             ec2.terminate_instances(InstanceIds=[instance['InstanceId']])
             print(f"------------------------")
 
+
 # Deletes user security group
 # All machines in this security groups must be down before the deleting starts
-def delete_security_group(ec2Client):
+def delete_security_group(ec2_client):
     print("Deleting security groups")
-    response = ec2Client.describe_security_groups()
+    response = ec2_client.describe_security_groups()
     groups = response["SecurityGroups"]
     group_tuple = map(lambda g: g["GroupName"], groups)
     for group in group_tuple:
         if group != "default":
-            response = ec2Client.delete_security_group(
+            ec2_client.delete_security_group(
                 GroupName=group,
             )
+
 
 def tear_down_architecture(shut_security_group=True):
     ec2_client = get_boto3_client('ec2')

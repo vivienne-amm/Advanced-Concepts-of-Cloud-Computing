@@ -28,6 +28,7 @@ db_config = {
     'autocommit': True
 }
 
+
 def get_fastest_worker():
     # Find the fastest worker node based on ping response time
     fastest_worker = ""
@@ -41,10 +42,12 @@ def get_fastest_worker():
 
     return fastest_worker
 
+
 def direct(query):
     # Execute query directly on the master node
     print("Proxy Type: direct")
     run_commands("Master", query)
+
 
 def random(query):
     # Execute query on a randomly selected worker node or directly if it needs write access
@@ -58,6 +61,7 @@ def random(query):
         print("Needs write access therefore executed directly")
         direct(query)
 
+
 def custom(query):
     # Execute query on a on fastest selected worker node or on master if it needs write access
     print("Proxy Type: customized")
@@ -70,10 +74,12 @@ def custom(query):
     else:
         direct(query)
 
+
 def needs_write_access(query):
     # Check if the query requires write access
     keywords = [instruction.strip().lower().split()[0] for instruction in query.split(";") if instruction.strip()]
     return any(keyword in ["delete", "update", "create", "insert", "grant", "revoke"] for keyword in keywords)
+
 
 def run_commands(name, commands):
     with SSHTunnelForwarder(config[name]['Host'], **ssh_config) as tunnel:
@@ -100,7 +106,6 @@ def run_commands(name, commands):
 
 
 def send_query(type, query):
-
     type = str(type).strip()
     query = str(query).strip()
 
@@ -132,6 +137,7 @@ def extract_response_values(data):
         print("return none,none because no regex match")
         return None, None
 
+
 def main():
     port = int(config['Proxy']['Port'])
 
@@ -159,7 +165,6 @@ def main():
     s.close()
     print("socket closed on proxy")
 
+
 if __name__ == '__main__':
     main()
-
-

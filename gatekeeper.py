@@ -5,6 +5,7 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+
 def is_valid_response(response):
     # Define a regex pattern based on the expected format
     pattern = re.compile(r'^(direct|custom|random)\|.*$', re.IGNORECASE)
@@ -14,6 +15,7 @@ def is_valid_response(response):
 
     # If there is a match, the response is considered valid
     return bool(match)
+
 
 def main():
     host = '0.0.0.0'
@@ -62,6 +64,6 @@ def main():
     s.close()
     print("sockets closed on proxy")
 
+
 if __name__ == '__main__':
     main()
-

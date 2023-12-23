@@ -7,6 +7,7 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+
 def get_proxy_type():
     # If the proxy type is not provided as a command line argument,
     # prompt the user to select a proxy type.
@@ -26,6 +27,7 @@ def get_proxy_type():
 
     return proxy_type
 
+
 def validate_user_input(user_input):
     # Validate user input for proxy type selection.
     valid_types = {"1": "direct", "2": "random", "3": "custom"}
@@ -39,6 +41,7 @@ def validate_user_input(user_input):
         print(f"Invalid input. Defaulting to '{default_type}'.")
         return default_type
 
+
 def send_data_to_gatekeeper(socket, proxy_type, sql_command):
     # Prepare and send data to the gatekeeper.
     data_to_send = f"{proxy_type}|{sql_command}"
@@ -50,6 +53,7 @@ def send_data_to_gatekeeper(socket, proxy_type, sql_command):
     received_msg = socket.recv(2048)
     print("Message received")
     print(received_msg.decode())
+
 
 if __name__ == '__main__':
     host = config['Gatekeeper']['Host']
@@ -79,4 +83,3 @@ if __name__ == '__main__':
 
     # Close the socket connection.
     s.close()
-
